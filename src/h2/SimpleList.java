@@ -10,21 +10,31 @@ public class SimpleList{
         this.head=head;
     }
 
-    public Node get(int index){
-        try {
-            if (this.content.length == 0) {
-                return null;
-            } else {
-                Node result = new Node(this.content[index].value);
-                try {
-                    result.next = new Node(this.content[index + 1].value);
-                } catch (Exception e) {
-                    result.next = null;
-                }
-                return result;
+    public int length(){
+        return this.content.length;
+    }
+
+    private void reload(){
+        this.content[this.length()-1].next=null;
+        if (this.length()>1) {
+            for (int x = this.length() - 2; x >= 0; x--) {
+                this.content[x].next = get(x + 1);
             }
-        }catch (Exception e){
-            return this.content[index];
+        }
+        this.head=getFirst();
+    }
+
+    public Node get(int index){
+        if (this.length() == 0) {
+        return new Node(Integer.MIN_VALUE);
+        }else{
+            Node result = new Node(this.content[index].value);
+            try {
+                result.next = new Node(this.content[index + 1].value);
+            }catch (Exception e){
+                result.next = null;
+            }
+            return result;
         }
     }
 
@@ -33,7 +43,7 @@ public class SimpleList{
     }
 
     public Node getLast(){
-        return this.get(this.content.length-1);
+        return this.get(this.length()-1);
     }
 
     public int getValue(int index){
@@ -42,57 +52,62 @@ public class SimpleList{
 
     public void append(int newValue){
         if (this.content.length>0) {
-            Node[] copy = new Node[this.content.length + 1];
-            for (int x = 0; x < this.content.length; x++) {
+            Node[] copy = new Node[this.length() + 1];
+            for (int x = 0; x < this.length(); x++) {
                 copy[x] = this.get(x);
             }
-            copy[this.content.length] = new Node(newValue);
+            copy[this.length()] = new Node(newValue);
             this.content = copy;
-        }else {
+            this.reload();
+        }else{
             this.content = new Node[1];
             this.content[0] = new Node(newValue);
+            this.reload();
         }
     }
 
-    public Node findFirst(){
-        if (this.content.length>0){
-            return this.get(0);
-        }else{
-            return null;
+    public Node findFirst(int value){
+        if (this.length()>0){
+            for (int y=0;y<this.length();y++){
+                if (this.getValue(y)==value){
+                    return new Node(y);
+                }
+            }
         }
+        return null;
     }
 
     public boolean insertAfter(int preValue,int newValue){
         boolean result=false;
-        for (int x=0;x<this.content.length;x++){
-            if (getValue(x)==preValue){
-                Node[] copy=new Node[this.content.length+1];
-                for (int y=0;y<content.length;y++){
-                    if (result){
-                        copy[y]=new Node(this.content[y-1].value);
-                    }else{
-                        copy[y] = this.get(y);
-                    }
-                }
-                copy[x+1]=new Node(newValue);
-                this.content=copy;
-                break;
-            }
+        SimpleList copy=new SimpleList(null);
+        for (int z=0;z<findFirst(preValue).value+1;z++){
+            copy.append(getValue(z));
         }
+        copy.append(newValue);
+        for (int z=findFirst(preValue).value+1;z<this.length();z++){
+            copy.append(getValue(z));
+        }
+        this.content=new Node[copy.length()];
+        for (int x=0;x<copy.length();x++){
+            this.content[x]=copy.get(x);
+        }
+        this.reload();
         return result;
     }
 
     public void delete(int a){
-        Node[] copy=new Node[this.content.length-1];
-        for (int x=0;x<copy.length;x++) {
-            if (x > a) {
-                copy[x] = new Node(this.content[x+1].value);
-            } else if (x < a) {
-                copy[x] = new Node(this.content[x].value);
-            }
+        SimpleList copy=new SimpleList(null);
+        for (int z=0;z<findFirst(a).value;z++){
+            copy.append(getValue(z));
         }
-        copy[a]=new Node(this.content[a+1].value);
-        this.content=copy;
+        for (int z=findFirst(a).value+1;z<this.length();z++){
+            copy.append(getValue(z));
+        }
+        this.content=new Node[this.length()-1];
+        for (int x=0;x<copy.length();x++){
+            this.content[x]=copy.get(x);
+        }
+        this.reload();
     }
 
     public String toString(){
